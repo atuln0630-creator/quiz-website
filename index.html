@@ -1,0 +1,468 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QuizSpark - Learn & Play</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
+
+:root {
+  --bg: #f6f7ff;
+  --text: #202344;
+  --muted: #777b9a;
+  --primary: #6755ee;
+  --card: #ffffff;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Poppins', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+button, select { font: inherit; cursor: pointer; }
+button { transition: .2s; }
+button:hover { transform: translateY(-2px); }
+.navbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 7%; background: white; border-bottom: 1px solid #ededf8;
+  position: sticky; top: 0; z-index: 10;
+}
+.logo { font-size: 25px; font-weight: 800; color: var(--primary); }
+.logo span { color: #ff9e43; }
+.nav-right { color: var(--muted); font-size: 13px; }
+.hero {
+  padding: 45px 20px 35px; text-align: center;
+  background: linear-gradient(125deg,#6755ee,#8975ff 60%,#b3a4ff);
+  color: white; position: relative; overflow: hidden;
+}
+.hero h1 { font-size: clamp(29px,5vw,46px); line-height: 1.25; margin-bottom: 12px; }
+.hero p { opacity: .9; font-size: 14px; }
+.hero .badge {
+  display: inline-block; padding: 6px 14px; margin-bottom: 15px;
+  border-radius: 30px; background: #ffffff25; font-size: 12px;
+}
+.stats {
+  max-width: 900px; margin: 25px auto 0; display: flex;
+  justify-content: center; flex-wrap: wrap; gap: 12px;
+}
+.stat {
+  padding: 12px 23px; border-radius: 14px;
+  background: #ffffff20; border: 1px solid #ffffff30; min-width: 130px;
+}
+.stat strong { display: block; font-size: 21px; }
+.stat span { font-size: 11px; opacity: .85; }
+.container { max-width: 1100px; padding: 32px 20px 55px; margin: auto; }
+.section-head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; flex-wrap: wrap; margin-bottom: 20px;
+}
+.section-head h2 { font-size: 22px; }
+.section-head p { font-size: 12px; color: var(--muted); }
+.subjects {
+  display: grid; grid-template-columns: repeat(auto-fit,minmax(145px,1fr));
+  gap: 15px;
+}
+.subject {
+  background: white; border: 2px solid transparent; border-radius: 18px;
+  padding: 19px 12px; text-align: center; box-shadow: 0 5px 20px #292b5210;
+}
+.subject:hover { transform: translateY(-4px); }
+.subject.active { border-color: var(--primary); box-shadow: 0 5px 22px #6755ee25; }
+.subject .emoji { font-size: 32px; margin-bottom: 8px; }
+.subject h3 { font-size: 14px; margin-bottom: 4px; }
+.subject p { color: var(--muted); font-size: 11px; }
+.purple { background: #f0edff; color: #6755ee; }
+.blue { background: #e7f4ff; color: #2788dc; }
+.orange { background: #fff1e4; color: #ee9138; }
+.green { background: #e5faef; color: #1ca76a; }
+.pink { background: #ffeaf3; color: #e54e91; }
+.yellow { background: #fff7d9; color: #b98b0c; }
+.quiz-layout { margin-top: 35px; }
+.quiz-card {
+  background: white; border-radius: 23px; padding: 28px;
+  box-shadow: 0 8px 35px #292b520d; border: 1px solid #ececfa;
+}
+.quiz-top {
+  display: flex; justify-content: space-between; align-items: center;
+  flex-wrap: wrap; gap: 12px; margin-bottom: 22px;
+}
+.tag { padding: 7px 13px; border-radius: 9px; font-size: 12px; font-weight: 600; }
+.timer { color: #ec6a53; font-size: 13px; font-weight: 700; }
+.progress-bg { background: #efeff8; height: 7px; border-radius: 10px; overflow: hidden; margin-bottom: 24px; }
+.progress { background: linear-gradient(90deg,#6755ee,#a99aff); height: 100%; width: 0%; transition: .3s; }
+.question-number { font-size: 12px; color: var(--muted); margin-bottom: 9px; }
+.question { font-size: clamp(18px,3vw,23px); line-height: 1.5; margin-bottom: 22px; }
+.options { display: grid; grid-template-columns: 1fr 1fr; gap: 13px; }
+.option {
+  display: flex; align-items: center; gap: 12px; padding: 15px;
+  text-align: left; border: 2px solid #ededf7; background: white;
+  border-radius: 13px; color: var(--text); font-size: 13px; min-height: 60px;
+}
+.option .letter {
+  width: 29px; height: 29px; display: grid; place-items: center;
+  border-radius: 8px; background: #f0efff; color: #6755ee; font-weight: 700;
+  flex-shrink: 0;
+}
+.option:hover:not(:disabled) { border-color: #9d91ff; background: #faf9ff; }
+.option.correct { border-color: #25b878; background: #eafff3; }
+.option.correct .letter { background: #25b878; color: white; }
+.option.wrong { border-color: #ff6c79; background: #fff0f1; }
+.option.wrong .letter { background: #ff6c79; color: white; }
+.option:disabled { cursor: default; }
+.feedback { min-height: 28px; margin-top: 16px; font-size: 13px; font-weight: 600; }
+.quiz-actions {
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 12px; margin-top: 18px; flex-wrap: wrap;
+}
+.btn {
+  border: 0; border-radius: 11px; padding: 12px 20px; font-weight: 600;
+  font-size: 13px;
+}
+.btn-primary { background: var(--primary); color: white; }
+.btn-light { background: #f0efff; color: var(--primary); }
+.btn:disabled { opacity: .4; cursor: not-allowed; transform: none; }
+.result { display: none; text-align: center; padding: 25px 10px; }
+.result-emoji { font-size: 65px; margin-bottom: 12px; }
+.result h2 { font-size: 29px; margin-bottom: 8px; }
+.result p { color: var(--muted); font-size: 13px; margin-bottom: 20px; }
+.score-circle {
+  width: 135px; height: 135px; border-radius: 50%; margin: 20px auto;
+  display: grid; place-items: center; background: #f0edff;
+  border: 8px solid #d8d0ff; color: var(--primary);
+}
+.score-circle strong { font-size: 30px; }
+.score-details { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; margin: 20px 0; }
+.score-item { background: #f7f7ff; border-radius: 12px; padding: 15px 23px; }
+.score-item strong { display: block; font-size: 20px; }
+.score-item span { font-size: 11px; color: var(--muted); }
+footer { text-align: center; padding: 23px; color: var(--muted); font-size: 11px; background: white; }
+@media(max-width:600px) {
+  .navbar { padding: 15px 5%; }
+  .hero { padding: 35px 15px 28px; }
+  .container { padding: 25px 13px 40px; }
+  .subjects { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px; }
+  .subject { padding: 15px 7px; }
+  .quiz-card { padding: 18px 14px; }
+  .options { grid-template-columns: 1fr; gap: 10px; }
+  .option { min-height: 53px; }
+  .stat { min-width: 100px; padding: 10px; }
+}
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="logo">Quiz<span>Spark.</span> ✨</div>
+  <div class="nav-right">🎯 Learn • Play • Grow</div>
+</nav>
+
+<header class="hero">
+  <div class="badge">🚀 YOUR DAILY KNOWLEDGE CHALLENGE</div>
+  <h1>Learn Something New.<br>One Quiz at a Time!</h1>
+  <p>Choose your favourite subject, test your knowledge and beat your best score.</p>
+  <div class="stats">
+    <div class="stat"><strong id="totalSubjects">7</strong><span>Subjects</span></div>
+    <div class="stat"><strong id="totalQuestions">28</strong><span>Questions</span></div>
+    <div class="stat"><strong id="bestScore">0</strong><span>Best Score</span></div>
+  </div>
+</header>
+
+<main class="container">
+  <div class="section-head">
+    <div>
+      <h2>📚 Explore Subjects</h2>
+      <p>Pick a subject to begin your quiz.</p>
+    </div>
+  </div>
+
+  <div class="subjects" id="subjects"></div>
+
+  <section class="quiz-layout" id="quizSection">
+    <div class="section-head">
+      <div>
+        <h2>🧠 Challenge Yourself</h2>
+        <p>Read carefully and choose the correct answer.</p>
+      </div>
+    </div>
+
+    <div class="quiz-card">
+      <div id="quizContent">
+        <div class="quiz-top">
+          <span class="tag purple" id="subjectTag">🌟 General Knowledge</span>
+          <span class="timer" id="timer">⏱ 20s</span>
+        </div>
+        <div class="progress-bg"><div class="progress" id="progress"></div></div>
+        <p class="question-number" id="questionNumber">QUESTION 1 OF 4</p>
+        <h2 class="question" id="question">Loading question...</h2>
+        <div class="options" id="options"></div>
+        <div class="feedback" id="feedback" aria-live="polite"></div>
+        <div class="quiz-actions">
+          <button class="btn btn-light" onclick="restartQuiz()">↻ Restart</button>
+          <button class="btn btn-primary" id="nextBtn" onclick="nextQuestion()" disabled>Next Question →</button>
+        </div>
+      </div>
+
+      <div class="result" id="result">
+        <div class="result-emoji" id="resultEmoji">🏆</div>
+        <h2 id="resultTitle">Quiz Completed!</h2>
+        <p id="resultMessage">Great job. Keep learning!</p>
+        <div class="score-circle">
+          <div><strong id="percentage">0%</strong><div style="font-size:11px">YOUR SCORE</div></div>
+        </div>
+        <div class="score-details">
+          <div class="score-item"><strong id="correctCount" style="color:#20ad70">0</strong><span>Correct</span></div>
+          <div class="score-item"><strong id="wrongCount" style="color:#ed6873">0</strong><span>Incorrect</span></div>
+          <div class="score-item"><strong id="finalTotal" style="color:#6755ee">0/4</strong><span>Total Questions</span></div>
+        </div>
+        <button class="btn btn-primary" onclick="restartQuiz()">↻ Play Again</button>
+        <button class="btn btn-light" onclick="scrollToSubjects()">📚 Change Subject</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>Made with 💜 by QuizSpark | Keep learning, keep shining!</footer>
+
+<script>
+const quizData = {
+  "General Knowledge": {
+    emoji:"🌍", color:"purple", questions:[
+      {q:"Which is the largest planet in our solar system?",o:["Earth","Jupiter","Mars","Venus"],a:1},
+      {q:"How many days are there in a leap year?",o:["364","365","366","367"],a:2},
+      {q:"Which is the national animal of India?",o:["Lion","Elephant","Bengal Tiger","Peacock"],a:2},
+      {q:"How many colours are traditionally in a rainbow?",o:["5","6","7","8"],a:2}
+    ]
+  },
+  "Mathematics": {
+    emoji:"➗", color:"blue", questions:[
+      {q:"What is 12 × 8?",o:["86","96","88","108"],a:1},
+      {q:"What is the square root of 144?",o:["10","11","12","14"],a:2},
+      {q:"What is 25% of 200?",o:["25","40","50","75"],a:2},
+      {q:"What is the sum of angles in a triangle?",o:["90°","180°","270°","360°"],a:1}
+    ]
+  },
+  "Science": {
+    emoji:"🔬", color:"green", questions:[
+      {q:"Which planet is known as the Red Planet?",o:["Venus","Mars","Saturn","Mercury"],a:1},
+      {q:"Which gas do plants absorb during photosynthesis?",o:["Oxygen","Nitrogen","Carbon dioxide","Hydrogen"],a:2},
+      {q:"What is the chemical formula of water?",o:["CO2","H2O","O2","NaCl"],a:1},
+      {q:"Which organ pumps blood through the body?",o:["Lungs","Brain","Kidney","Heart"],a:3}
+    ]
+  },
+  "English": {
+    emoji:"📖", color:"orange", questions:[
+      {q:"What is the plural of 'Child'?",o:["Childs","Childes","Children","Childrens"],a:2},
+      {q:"Which word is a noun?",o:["Quickly","Beautiful","Happiness","Run"],a:2},
+      {q:"Choose the correct spelling.",o:["Beautifull","Beautiful","Beutiful","Beautifal"],a:1},
+      {q:"What is the opposite of 'Ancient'?",o:["Old","Historic","Modern","Past"],a:2}
+    ]
+  },
+  "Hindi": {
+    emoji:"📝", color:"pink", questions:[
+      {q:"'सूर्य' का पर्यायवाची शब्द कौन-सा है?",o:["चंद्र","रवि","बादल","तारा"],a:1},
+      {q:"'दिन' का विलोम शब्द क्या है?",o:["सुबह","शाम","रात","दोपहर"],a:2},
+      {q:"हिंदी वर्णमाला में स्वर कितने माने जाते हैं?",o:["10","11","13","15"],a:2},
+      {q:"'कमल' किस प्रकार की संज्ञा है?",o:["व्यक्तिवाचक","जातिवाचक","भाववाचक","समूहवाचक"],a:1}
+    ]
+  },
+  "History": {
+    emoji:"🏛️", color:"yellow", questions:[
+      {q:"When did India become independent?",o:["1945","1947","1950","1952"],a:1},
+      {q:"Who was known as the Iron Man of India?",o:["Mahatma Gandhi","Subhas Bose","Sardar Vallabhbhai Patel","Jawaharlal Nehru"],a:2},
+      {q:"Who was the first Mughal emperor in India?",o:["Akbar","Humayun","Babur","Shah Jahan"],a:2},
+      {q:"Where is the Taj Mahal located?",o:["Delhi","Jaipur","Agra","Lucknow"],a:2}
+    ]
+  },
+  "Computer": {
+    emoji:"💻", color:"purple", questions:[
+      {q:"What does CPU stand for?",o:["Central Processing Unit","Computer Personal Unit","Central Program Utility","Core Processing User"],a:0},
+      {q:"Which device is used to type text?",o:["Monitor","Keyboard","Speaker","Printer"],a:1},
+      {q:"Which of these is a web browser?",o:["Windows","Google Chrome","MS Word","Paint"],a:1},
+      {q:"What does HTML stand for?",o:["HyperText Markup Language","HighText Machine Language","Hyper Transfer Main Link","Home Tool Markup Language"],a:0}
+    ]
+  }
+};
+
+const subjectColors = ["purple","blue","green","orange","pink","yellow","purple"];
+const subjectKeys = Object.keys(quizData);
+let currentSubject = "General Knowledge";
+let currentIndex = 0;
+let score = 0;
+let answered = false;
+let timeLeft = 20;
+let timerId = null;
+let bestScore = Number(localStorage.getItem("quizSparkBest") || 0);
+
+const $ = id => document.getElementById(id);
+
+function init() {
+  $("totalSubjects").textContent = subjectKeys.length;
+  $("totalQuestions").textContent = subjectKeys.reduce((n,k)=>n+quizData[k].questions.length,0);
+  $("bestScore").textContent = bestScore;
+  renderSubjects();
+  loadQuestion();
+}
+
+function renderSubjects() {
+  $("subjects").innerHTML = subjectKeys.map((name,i) => {
+    const s = quizData[name];
+    return `<button class="subject ${currentSubject===name?"active":""}" onclick="selectSubject('${name}')">
+      <div class="emoji">${s.emoji}</div>
+      <h3>${name}</h3>
+      <p>${s.questions.length} Questions</p>
+    </button>`;
+  }).join("");
+}
+
+function selectSubject(name) {
+  currentSubject = name;
+  currentIndex = 0;
+  score = 0;
+  renderSubjects();
+  loadQuestion();
+  $("quizSection").scrollIntoView({behavior:"smooth",block:"start"});
+}
+
+function stopTimer() {
+  if(timerId) clearInterval(timerId);
+  timerId = null;
+}
+
+function startTimer() {
+  stopTimer();
+  timeLeft = 20;
+  $("timer").textContent = "⏱ " + timeLeft + "s";
+  timerId = setInterval(() => {
+    timeLeft--;
+    $("timer").textContent = "⏱ " + timeLeft + "s";
+    if(timeLeft <= 5) $("timer").style.color = "#ed6873";
+    if(timeLeft <= 0) {
+      stopTimer();
+      if(!answered) {
+        answered = true;
+        showCorrectAnswer(-1);
+        $("feedback").textContent = "⏰ Time's up! Let's try the next one.";
+        $("feedback").style.color = "#ed9138";
+        $("nextBtn").disabled = false;
+      }
+    }
+  },1000);
+}
+
+function loadQuestion() {
+  stopTimer();
+  answered = false;
+  const data = quizData[currentSubject];
+  const q = data.questions[currentIndex];
+
+  $("quizContent").style.display = "block";
+  $("result").style.display = "none";
+  $("subjectTag").className = "tag " + data.color;
+  $("subjectTag").textContent = data.emoji + " " + currentSubject;
+  $("questionNumber").textContent = `QUESTION ${currentIndex+1} OF ${data.questions.length}`;
+  $("question").textContent = q.q;
+  $("progress").style.width = (currentIndex/data.questions.length*100) + "%";
+  $("feedback").textContent = "";
+  $("nextBtn").disabled = true;
+  $("nextBtn").textContent = currentIndex === data.questions.length-1 ? "See Results →" : "Next Question →";
+  $("timer").style.color = "#ec6a53";
+
+  $("options").innerHTML = q.o.map((option,i) => `
+    <button class="option" onclick="selectAnswer(${i})">
+      <span class="letter">${String.fromCharCode(65+i)}</span>
+      <span>${option}</span>
+    </button>
+  `).join("");
+
+  startTimer();
+}
+
+function showCorrectAnswer(selected) {
+  const q = quizData[currentSubject].questions[currentIndex];
+  document.querySelectorAll(".option").forEach((btn,i) => {
+    btn.disabled = true;
+    if(i === q.a) btn.classList.add("correct");
+    else if(i === selected) btn.classList.add("wrong");
+  });
+}
+
+function selectAnswer(index) {
+  if(answered) return;
+  answered = true;
+  stopTimer();
+  const q = quizData[currentSubject].questions[currentIndex];
+
+  if(index === q.a) {
+    score++;
+    $("feedback").textContent = "🎉 Correct! Excellent work.";
+    $("feedback").style.color = "#1ca76a";
+  } else {
+    $("feedback").textContent = "💡 Not quite! The correct answer is " + q.o[q.a] + ".";
+    $("feedback").style.color = "#e87943";
+  }
+
+  showCorrectAnswer(index);
+  $("nextBtn").disabled = false;
+}
+
+function nextQuestion() {
+  if(!answered) return;
+  const questions = quizData[currentSubject].questions;
+  currentIndex++;
+  if(currentIndex >= questions.length) showResults();
+  else loadQuestion();
+}
+
+function showResults() {
+  stopTimer();
+  const total = quizData[currentSubject].questions.length;
+  const percentage = Math.round(score/total*100);
+
+  if(score > bestScore) {
+    bestScore = score;
+    localStorage.setItem("quizSparkBest",String(bestScore));
+    $("bestScore").textContent = bestScore;
+  }
+
+  $("quizContent").style.display = "none";
+  $("result").style.display = "block";
+  $("progress").style.width = "100%";
+  $("percentage").textContent = percentage + "%";
+  $("correctCount").textContent = score;
+  $("wrongCount").textContent = total-score;
+  $("finalTotal").textContent = score + "/" + total;
+
+  if(percentage === 100) {
+    $("resultEmoji").textContent = "🏆";
+    $("resultTitle").textContent = "Perfect Score!";
+    $("resultMessage").textContent = "Outstanding! You answered every question correctly.";
+  } else if(percentage >= 60) {
+    $("resultEmoji").textContent = "🎉";
+    $("resultTitle").textContent = "Great Job!";
+    $("resultMessage").textContent = "Well done! Keep practising to improve your score.";
+  } else {
+    $("resultEmoji").textContent = "💪";
+    $("resultTitle").textContent = "Keep Practising!";
+    $("resultMessage").textContent = "Every attempt helps you learn something new. Try again!";
+  }
+}
+
+function restartQuiz() {
+  currentIndex = 0;
+  score = 0;
+  loadQuestion();
+}
+
+function scrollToSubjects() {
+  stopTimer();
+  renderSubjects();
+  $("subjects").scrollIntoView({behavior:"smooth",block:"center"});
+}
+
+init();
+</script>
+</body>
+</html>
